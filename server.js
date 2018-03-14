@@ -1,44 +1,117 @@
+var mongoose = require('./app/models/database');
 var express = require('express');
-var app = express();
-var path = require('path');
-var port = process.env.PORT || 3000;
-var mongoose = require('mongoose');
 var passport = require('passport');
-var flash = require('connect-flash');
-
-var morgan = require('morgan');
-var cookieParser = require('cookie-parser');
+var jwt = require('jsonwebtoken');
+var cors = require('cors');
 var bodyParser = require('body-parser');
-var session = require('express-session');
+var expressJwt = require('express-jwt');
+var bodyParser = require('body-parser');
 
-var configDB = require('./config/database.js');
+mongoose();
 
-mongoose.connect(configDB.url);
+var User = require('mongoose').model('User');
+var passportConfig = require('./config/passport');
 
-require('./config/passport')(passport);
+passportConfig();
 
-app.use(morgan('dev')); // log every request to the console
-app.use(cookieParser()); // read cookies (needed for auth)
-app.use(bodyParser.json()); // get information from html forms
+var router = express.Router();
+
+var app = express();
+
+var corsOption = {
+    origin: true,
+    methods: 'GET, HEAD, PUT, PATCH, POST, DELETE',
+    credentials: true,
+    exposedHeaders: ['x-auth-token']
+};
+
+app.use(cors(corsOption)); // Setting CORS
+
 app.use(bodyParser.urlencoded({
     extended: true
 }));
+app.use(bodyParser.json());
 
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'hbs');
+var createToken = function (auth) {
+    return jwt.sign({
+        id: auth.id
+    }, 'my-secret', {
+        expiresIn: 60 * 120
+    });
+};
 
-// required for passport
-app.use(session({
-    secret: 'ilovescotchscotchyscotchscotch', // session secret
-    resave: true,
-    saveUninitialized: true
-}));
-app.use(passport.initialize());
-app.use(passport.session()); // persistent login sessions
-app.use(flash()); // use connect-flash for flash messages stored in session
+var generateToken = function (req, res, next) {
+    req.token = createToken(req.auth);
+    next();
+}
 
-// routes ======================================================================
-require('./app/routes.js')(app, passport); // load our routes and pass in our app and fully configured passport
+var sendToken = function (req, res) {
+    res.setHeader('x-auth-token', req.token);
+    res.status(200).send(req.auth);
+};
 
-// launch ======================================================================
-app.listen(port);
+router.route('/auth/facebook').post(passport.authenticate('facebook-token', {
+    session: false
+}), function (req, res, next) {
+    if (!req.user) {
+        return res.send(401, 'User is not Authenticated.');
+    }
+
+    req.auth = {
+        id: req.user.id
+    };
+
+    next();
+}, generateToken, sendToken);
+
+var authenticate = expressJwt({
+    secret: 'my-secret',
+    requestProperty: 'auth',
+    getToken: function (req) {
+        if (req.headers['x-auth-token']) {
+            return req.headers['x-auth-token'];
+        }
+        return null;
+    }
+});
+
+var getCurrentUser = function (req, res, next) {
+    User.findById(req.auth.id, function (err, user) {
+        if (err) {
+            next(err);
+        } else {
+            req.user = user;
+            next();
+        }
+    });
+};
+
+var updateCurrentUser = function (req, res, next) {
+User.findByIdAndUpdate({_id: req.auth.id}, {$set: req.body}, function(err, user) {
+    if(err) {
+        next(err);
+    } else {
+        console.log(req.body);
+        console.log(user);
+    }
+})
+}
+
+var getOne = function (req, res) {
+    var user = req.user.toObject();
+
+    delete user['facebookProvider'];
+    delete user['__v'];
+
+    res.json(user);
+};
+
+router.route('/auth/me').get(authenticate, getCurrentUser, getOne);
+router.route('/update').post(authenticate,updateCurrentUser);
+
+app.use('/api', router);
+
+app.listen(process.env.PORT || 3000);
+module.exports = app;
+
+console.log('Backend Server Started.');

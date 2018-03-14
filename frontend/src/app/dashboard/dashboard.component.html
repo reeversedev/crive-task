@@ -1,0 +1,55 @@
+<!-- <img src="{{currentUser.photo}}" alt="">
+{{currentUser.email}}
+{{currentUser.firstName}} -->
+<div class="container">
+  <div class="col-md-12">
+    <img src="{{currentUser.photo}}" alt="" class="img-responsive img-circle" height="180" width="180">
+  </div>
+  <div class="col-md-12">
+    <h3 class="text-center">{{currentUser.firstName}}</h3>
+    <div>
+      <p class="text-center">
+        <strong>Email: </strong>{{currentUser.email}}</p>
+    </div>
+    <div>
+      <p class="text-center">
+        <strong>Address: </strong>{{currentUser.address1}}, {{currentUser.address2}}</p>
+    </div>
+  </div>
+  <div>
+    <form class="col-md-12">
+      <div class="form-group">
+        <label for="address1">Address 1</label>
+        <input type="text" class="form-control" name="address1" [(ngModel)]="address1" (input)="changeValue()">
+      </div>
+      <div class="form-group">
+        <label for="address2">Address 2</label>
+        <input type="text" class="form-control" name="address2" [(ngModel)]="address2">
+      </div>
+      <div class="form-group">
+        <label for="country">Country</label>
+        <select (focus)="makeCountriesRequest()" #country [(ngModel)]="countryname" (change)="countryValue(country.value)" class="form-control"
+          name="country">
+          <option *ngFor="let country of countries" [value]="country.geonameId">{{country.name}}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="city">City</label>
+        <select (focus)="makeCitiesRequest()" name="city" #city [(ngModel)]="cityname" class="form-control" (input)="cityInput(city.value)">
+          <option *ngFor="let city of cities" [value]="city.name">{{city.name}}</option>
+        </select>
+      </div>
+      <!-- <div class="form-group">
+        <label for="zip">Zip Code</label>
+        <input (keypress)="onlyNumber()" maxlength="5" minlength="5" class="form-control" [(ngModel)]="zip" name="zipcode">
+      </div> -->
+      <div class="form-group">
+        <label for="pin">Pin Code</label>
+        <input (keypress)="onlyNumber()" maxlength="6" minlength="6" class="form-control" [(ngModel)]="pin" name="pincode">
+      </div>
+      <div>
+        <button (click)="updateCurrentUser()" class="btn btn-default">Update</button>
+      </div>
+    </form>
+  </div>
+</div>

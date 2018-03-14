@@ -4,11 +4,11 @@ module.exports = function (app, passport) {
         res.render('index.hbs');
     });
 
-    app.get('/profile', function(req, res) {
-        res.render('profile.hbs', {
+    app.get('/profile', function (req, res) {
+        res.json({
             user: req.user
-        })
-    })
+        });
+    });
     app.get('/logout', function (req, res) {
         req.logout();
         res.redirect('/');
