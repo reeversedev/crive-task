@@ -7,13 +7,30 @@
   </div>
   <div class="col-md-12">
     <h3 class="text-center">{{currentUser.firstName}}</h3>
-    <div>
+    <div *ngIf=currentUser.email>
       <p class="text-center">
         <strong>Email: </strong>{{currentUser.email}}</p>
     </div>
-    <div>
+    <div *ngIf=currentUser.address1>
       <p class="text-center">
         <strong>Address: </strong>{{currentUser.address1}}, {{currentUser.address2}}</p>
+    </div>
+    <div *ngIf=currentUser.country>
+      <p class="text-center">
+        <strong>Country: </strong>
+        {{currentUser.country}}
+      </p>
+    </div>
+    <div *ngIf=currentUser.state>
+      <p class="text-center">
+        <strong>State: </strong>
+        {{currentUser.state}}
+      </p>
+    </div>
+    <div *ngIf=currentUser.code>
+      <p class="text-center">
+        <strong>Zip/Pin Code: </strong> {{currentUser.code}}
+      </p>
     </div>
   </div>
   <div>
@@ -28,12 +45,12 @@
       </div>
       <div class="form-group">
         <label for="country">Country</label>
-        <select (focus)="makeCountriesRequest()" #country [(ngModel)]="countryname" (change)="countryValue(country.value)" class="form-control"
+        <select #country [(ngModel)]="countryname" (focus)="makeCountriesRequest()" (change)="countryValue(country.value)" class="form-control"
           name="country">
-          <option *ngFor="let country of countries" [value]="country.geonameId">{{country.name}}</option>
+          <option *ngFor="let country of countries" [value]="country.geonameId" [value]="country.name">{{country.name}}</option>
         </select>
       </div>
-      <div class="form-group">
+      <div class="form-group" *ngIf="cities">
         <label for="city">City</label>
         <select (focus)="makeCitiesRequest()" name="city" #city [(ngModel)]="cityname" class="form-control" (input)="cityInput(city.value)">
           <option *ngFor="let city of cities" [value]="city.name">{{city.name}}</option>

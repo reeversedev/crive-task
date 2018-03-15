@@ -4,11 +4,15 @@ import { FormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Http } from '@angular/http';
 
+
+declare const countryNaam: String;
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
+
 export class DashboardComponent implements OnInit {
 
   address1: any;
@@ -18,8 +22,8 @@ export class DashboardComponent implements OnInit {
   myForm: any;
   countries: any;
   cities: any;
-  countryname: any;
   cityname: any;
+  countryname: String;
   constructor(private criveAuthenticationService: CriveAuthenticationService, private router: Router, private http: Http) { }
 
 
@@ -27,7 +31,7 @@ export class DashboardComponent implements OnInit {
   ngOnInit() {
     this.http.get('http://www.geonames.org/childrenJSON?geonameId=6255147&callback=listPlaces&style=long&noCacheIE=1521040419460')
       .subscribe(res =>
-        this.countries = res._body.split('listPlaces(')[1]);
+        this.countries = (<any>res)._body.split('listPlaces(')[1]);
     this.criveAuthenticationService.getCurrentUser()
       .then(profile => this.currentUser = profile);
   }
@@ -45,11 +49,27 @@ export class DashboardComponent implements OnInit {
       this.zip = false;
     }
   }
+  countryName(countryValue) {
+    const item = this.countries.filter(function (country) {
+      if (country.geonameId == countryValue) {
+        return country.name;
+      }
+    })[0];
+
+    this.countryname = item.name;
+  }
   countryValue(countryvalue) {
-    console.log(countryvalue.geonameId);
-    this.http.get('http://www.geonames.org/childrenJSON?geonameId=' + countryvalue.geonameId + '&callback=listPlaces&style=long&noCacheIE=1521046928591')
+    this.countryName(countryvalue);
+    // const item = this.countries.map(function (country) {
+    //   if (country.geonameId == countryvalue) {
+    //     return country.name;
+    //   }
+    // });
+
+    this.http.get('http://www.geonames.org/childrenJSON?geonameId='
+      + countryvalue + '&callback=listPlaces&style=long&noCacheIE=1521046928591')
       .subscribe(res =>
-        this.cities = res._body.split('listPlaces(')[1]
+        this.cities = res['_body'].split('listPlaces(')[1]
       );
   }
   makeCountriesRequest() {
@@ -74,7 +94,7 @@ export class DashboardComponent implements OnInit {
         address1: this.address1,
         address2: this.address2,
         country: this.countryname,
-        city: this.cityname,
+        state: this.cityname,
         code: this.pin,
       };
       this.criveAuthenticationService.updateCurrentUser(data).then(res => console.log('Update', res));
@@ -83,8 +103,16 @@ export class DashboardComponent implements OnInit {
         address1: this.address1,
         address2: this.address2,
         country: this.countryname,
-        city: this.cityname,
+        state: this.cityname,
         code: this.zip,
+      };
+      this.criveAuthenticationService.updateCurrentUser(data).then(res => console.log('Update', res));
+    } else if (!this.zip || !this.pin) {
+      const data = {
+        address1: this.address1,
+        address2: this.address2,
+        country: this.countryname,
+        state: this.cityname,
       };
       this.criveAuthenticationService.updateCurrentUser(data).then(res => console.log('Update', res));
     }

@@ -20,7 +20,7 @@ export class CriveAuthenticationService {
     return new Promise((resolve, reject) => {
       FB.login(result => {
         if (result.authResponse) {
-          return this.http.post('http://localhost:3000/api/auth/facebook', { access_token: result.authResponse.accessToken })
+          return this.http.post('api/auth/facebook', { access_token: result.authResponse.accessToken })
             .toPromise()
             .then(response => {
               const token = response.headers.get('x-auth-token');
@@ -48,7 +48,7 @@ export class CriveAuthenticationService {
   }
   getCurrentUser() {
     return new Promise((resolve, reject) => {
-      return this.http.get('http://localhost:3000/api/auth/me')
+      return this.http.get('api/auth/me')
         .toPromise()
         .then(response => {
           resolve(response.json());
@@ -57,7 +57,7 @@ export class CriveAuthenticationService {
   }
   updateCurrentUser(params) {
     return new Promise((resolve, reject) => {
-      return this.http.post('http://localhost:3000/api/update', params)
+      return this.http.post('api/update', params)
         .toPromise()
         .then(response => {
           resolve(response.json());

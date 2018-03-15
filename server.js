@@ -1,11 +1,11 @@
 var mongoose = require('./app/models/database');
 var express = require('express');
+var path = require('path'),
 var passport = require('passport');
 var jwt = require('jsonwebtoken');
 var cors = require('cors');
 var bodyParser = require('body-parser');
 var expressJwt = require('express-jwt');
-var bodyParser = require('body-parser');
 
 mongoose();
 
@@ -31,6 +31,7 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 var createToken = function (auth) {
     return jwt.sign({
@@ -111,7 +112,7 @@ router.route('/update').post(authenticate,updateCurrentUser);
 
 app.use('/api', router);
 
-app.listen(process.env.PORT || 3000);
+app.listen(process.env.PORT || 8080);
 module.exports = app;
 
 console.log('Backend Server Started.');
