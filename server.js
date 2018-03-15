@@ -1,6 +1,6 @@
 var mongoose = require('./app/models/database');
 var express = require('express');
-var path = require('path'),
+var path = require('path');
 var passport = require('passport');
 var jwt = require('jsonwebtoken');
 var cors = require('cors');
